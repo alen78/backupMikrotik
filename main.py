@@ -2,6 +2,7 @@ import paramiko, os
 import time, datetime
 
 datum = datetime.datetime.now().strftime("20%y%m%d")
+#putanja = 'D:/test/'
 putanja = '/backups/mikrotik/'
 
 client = paramiko.SSHClient()
@@ -21,33 +22,21 @@ for router in routers:
     print(f'Connecting to {router["hostname"]}')
     client.connect(**router,look_for_keys=False)
     stdin, stdout, stderr = client.exec_command(':global idt [/system identity get name]; :put $idt')
-    filename = stdout.read()
-    # print (filename.decode())
-
+    #filename = stdout.read()
     stdin, stdout, stderr = client.exec_command(' /export file=[/system identity get name]')
 
     stdin, stdout, stderr = client.exec_command('/system backup save dont-encrypt=yes name=[/system identity get name]')
 
-    time.sleep(10)
-
-    sftp = client.open_sftp()
-    # Download
-    filepath = filename.decode().strip() + ".rsc"
-    print (filepath)
-    localpath = os.path.join(putanja, datum+'-'+filepath )
-
-    sftp.get(filepath, localpath)
-
     time.sleep(5)
 
-    # sftp = client.open_sftp()
-    # Download
-    filepath = filename.decode().strip() + ".backup"
-    print (filepath)
-    localpath = os.path.join(putanja, datum+'-'+filepath)
+    sftp = client.open_sftp()
+    rfiles = sftp.listdir()
+    print(rfiles)
+    rfile = ""
+    for rfile in rfiles:
+        if rfile.endswith('.rsc') or rfile.endswith('.backup'):
+            localpath = os.path.join(putanja, datum + '-' + rfile)
+            sftp.get(rfile, localpath)
+            time.sleep(5)
 
-    sftp.get(filepath, localpath)
-
-    time.sleep(10)
-
-client.close()
+    client.close()
