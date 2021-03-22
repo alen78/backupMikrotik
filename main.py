@@ -23,8 +23,7 @@ for router in routers:
     client.connect(**router,look_for_keys=False)
     stdin, stdout, stderr = client.exec_command(':global idt [/system identity get name]; :put $idt')
     #filename = stdout.read()
-    stdin, stdout, stderr = client.exec_command(' /export file=[/system identity get name]')
-
+    stdin, stdout, stderr = client.exec_command('/export file=[/system identity get name]')
     stdin, stdout, stderr = client.exec_command('/system backup save dont-encrypt=yes name=[/system identity get name]')
 
     time.sleep(5)
